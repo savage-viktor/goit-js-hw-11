@@ -1,0 +1,14 @@
+.gallery {
+    display: flex;
+    flex-wrap: wrap;
+    width: 1600px;
+}
+
+.photo-card {
+    width: 380px;
+    margin: 10px;
+}
+img {
+    display: block;
+    width: 100%;
+}
