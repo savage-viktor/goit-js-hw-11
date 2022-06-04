@@ -1,18 +1,32 @@
 import { fetchImages } from "./fetch"
+import simplelightbox from "simplelightbox"
+import "simplelightbox/dist/simple-lightbox.min.css"
 
 const galleryDiv = document.querySelector(".gallery")
 const formRef = document.querySelector(".search-form")
+const loadMoreBTN = document.querySelector(".button__load-more")
+
 
 formRef.addEventListener("submit", onSubmit)
+loadMoreBTN.addEventListener("click", onLoadMore)
 
-let request = "Cats"
+
+
 let page = 1
+let request
+let lightbox
 
-// fetchImages(request, page)
-//     .then(renderGallery)
-//     .catch(showError)
+function onLoadMore(ev) {
+    ev.preventDefault()
 
-
+    page += 1
+    fetchImages(request, page)
+        .then(res => {
+            renderGallery(res)
+            lightbox.refresh()
+        })
+        .catch(showError)
+}
 
 function renderGallery(res) {
     console.log(res.hits)
@@ -22,27 +36,33 @@ function renderGallery(res) {
     res.hits.map(image => {
         const { webformatURL, largeImageURL, tags, likes, views, comments, downloads } = image
         cardsArray.push(
-            `<div class="photo-card">
-                <img src="${webformatURL}" alt="${tags}" loading="lazy" />
-                <div class="info">
-                    <p class="info-item">
-                    <b>Likes: ${likes}</b>
-                    </p>
-                    <p class="info-item">
-                    <b>Views: ${views}</b>
-                    </p>
-                    <p class="info-item">
-                    <b>Comments: ${comments}</b>
-                    </p>
-                    <p class="info-item">
-                    <b>Downloads: ${downloads}</b>
-                    </p>
-                 </div>
-             </div>`
+            `<a href="${largeImageURL}">
+      <div class="photo-card">
+        <img src="${webformatURL}" alt="${tags}" loading="lazy" />
+        <div class="info">
+          <p class="info-item">
+            <b>${likes}</b>
+          </p>
+          <p class="info-item">
+            <b>${views}</b>
+          </p>
+          <p class="info-item">
+            <b>${comments}</b>
+          </p>
+          <p class="info-item">
+            <b>${downloads}</b>
+          </p>
+        </div>
+      </div>
+    </a>`
         )
     })
 
-    galleryDiv.innerHTML = cardsArray.join("")
+    // galleryDiv.innerHTML = cardsArray.join("")
+    galleryDiv.insertAdjacentHTML("beforeend", cardsArray.join(""))
+
+
+
 }
 
 function showError(err) {
@@ -55,10 +75,21 @@ function onSubmit(ev) {
 
     console.dir(ev.currentTarget.elements.searchQuery.value)
 
-    let request = ev.currentTarget.elements.searchQuery.value
+    request = ev.currentTarget.elements.searchQuery.value
 
     fetchImages(request, page)
-        .then(renderGallery)
+        .then(res => {
+            renderGallery(res)
+            startSL()
+        })
         .catch(showError)
 
+
+}
+
+function startSL() {
+    lightbox = new simplelightbox('.gallery a', {
+        captionsData: "alt",
+        captionDelay: 250,
+    })
 }
